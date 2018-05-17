@@ -1,15 +1,15 @@
-﻿Toolbox de Identificação de Sistemas desenvolvido em Python.
+﻿System Identification Toolbox developed in Python.
 
-- Ajuste de Curvas
+- Curve fitting
 
-- Mínimos Quadrados
+- Least Squares
 
-- Mínimos Quadrados Extendidos
+- Extended Least Squares
 
-- Variáveis Instrumentais
+- Instrumental Variables
 
 - Stieglitz-McBride
 
-- Exemplos
+- Examples
 
-- Manual das Funções
+- Function's Manual 
