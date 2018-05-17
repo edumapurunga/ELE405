@@ -1,18 +1,15 @@
-Tooldbox de identificação de sistemas em Python
+﻿Toolbox de Identificação de Sistemas desenvolvido em Python.
 
--Ajuste de Curvas
+- Ajuste de Curvas
 
--Mínimos Quadrados
+- Mínimos Quadrados
 
--Mínimos Quadrados Extendidos
+- Mínimos Quadrados Extendidos
 
--Variaveis Instrumentais
+- Variáveis Instrumentais
 
--Stieglitz-McBride
+- Stieglitz-McBride
 
--Exemplos
+- Exemplos
 
--Manual das funções
-
-
-
+- Manual das Funções
