@@ -73,14 +73,14 @@ def ls(na, nb, u, y, nk=0):
     return [a, b]
 
 
-def iv(na, nb, u, y, u2, y2, nk=0):
+def iv(na, nb, u, y, y2, nk=0):
 
     # Number of samples
     N = np.size(y)
 
-    # Vetors u, y, u2 and y2 must have same amount of samples
-    if (N != np.size(u)) or (N != np.size(u2)) or (N != np.size(y2)):
-        raise ValueError('Y, Y2, U and U2 must have same length!')
+    # Vetors u, y and y2 must have same amount of samples
+    if (N != np.size(u)) or (N != np.size(y2)):
+        raise ValueError('Y, Y2 and U must have same length!')
 
     # Number of coefficients to be estimated
     # (a_1, a_2, a_3,..., a_na, b_0, b_1, b_2, b_nb)
@@ -99,7 +99,7 @@ def iv(na, nb, u, y, u2, y2, nk=0):
     # Build matrix phi in which will contain y and u shifted in time
     phi = np.zeros((N - n_max, M))
 
-    # Build matrix csi in which will contain y2 and u2 shifted in time
+    # Build matrix csi in which will contain y2 and u shifted in time
     csi = np.zeros((N - n_max, M))
 
     k = 0
@@ -110,10 +110,10 @@ def iv(na, nb, u, y, u2, y2, nk=0):
         csi[:, k] = y2[n_max - i:N - i]
         k = k + 1
 
-    # Fill phi/csi with u/u2 shifted in time from 0 to nb
+    # Fill phi/csi with u shifted in time from 0 to nb
     for i in range(nk, nb + nk + 1):
         phi[:, k] = u[n_max - i:N - i]
-        csi[:, k] = u2[n_max - i:N - i]
+        csi[:, k] = u[n_max - i:N - i]
         k = k + 1
 
     # If two or more columns of phi are equal,
