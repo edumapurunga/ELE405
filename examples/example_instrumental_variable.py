@@ -28,7 +28,7 @@ Authors:
 
 import sys
 sys.path.append('..')
-from sysid import ls, iv
+from sysid import iv
 import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -36,7 +36,7 @@ import matplotlib.pyplot as plt
 ## Number of samples in each experiment
 N=1000
 
-## Filling coeffiecients of the model for A and B
+## Fill the coefficients of the model for A and B
 a=np.array([1, -0.99])
 b=np.array([0, 5])
 

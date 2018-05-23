@@ -37,7 +37,7 @@ import matplotlib.pyplot as plt
 ## Number of samples
 N=1000
 
-## Filling coeffiecients of the model for A and B
+## Fill the coefficients of the model for A and B
 a=np.array([1, -0.99])
 b=np.array([0, 0.01])
 
