@@ -1,1 +1,0 @@
-# Exemplo - Mínimos Quadrados Recursivos

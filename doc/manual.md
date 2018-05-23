@@ -34,7 +34,7 @@ import <module_name>
 (...)
 ```
 
-[Exemplo Mínimos Quadrados](../exemplos/minimos_quadrados.py)
+[Exemplo Mínimos Quadrados](../examples/example_least_square.py)
 
 --------------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ import <module_name>
 (...)
 ```
 
-[Exemplo Variáveis Instrumentais](../exemplos/variaveis_instrumentais.py)
+[Exemplo Variáveis Instrumentais](../examples/example_instrumental_variable.py)
 
 --------------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ import <module_name>
 (...)
 ```
 
-[Exemplo Mínimos Quadrados Recursivos](../exemplos/minimos_quadrados_recursivos.py)
+[Exemplo Mínimos Quadrados Recursivos](../examples/example_recursive_least_square.py)
 
 --------------------------------------------------------------------------------
 
@@ -123,6 +123,6 @@ import <module_name>
 (...)
 ```
 
-[Exemplo Steiglitz - Mc Bride](../exemplos/steiglitz_mcbride.py)
+[Exemplo Steiglitz - Mc Bride](../examples/example_steiglitz_mcbride.py)
 
 --------------------------------------------------------------------------------
