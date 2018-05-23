@@ -1,1 +1,0 @@
-# Exemplo - Variáveis Instrumentais
