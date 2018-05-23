@@ -45,7 +45,7 @@ def ls(na, nb, u, y, nk=0):
 
     # Fill phi with y shifted in time from 0 to nb
     for i in range(1, na + 1):
-        phi[:, k] = y[n_max - i:N - i]
+        phi[:, k] = -y[n_max - i:N - i]
         k = k + 1
 
     # Fill phi with u shifted in time from 0 to nb
