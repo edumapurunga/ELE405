@@ -53,16 +53,17 @@ def ls(na, nb, u, y, nk=0):
         phi[:, k] = u[n_max - i:N - i]
         k = k + 1
 
-    # If two or more columns of phi are equal,
-    # then inverse operation will not be possible!
-    if (la.matrix_rank(phi) < M):
-        raise ValueError('Phi must have rank equal to na+nb+1!')
 
     # Crop y from n_max to N
     y = y[n_max:N]
 
     # Find theta
     R = np.dot(phi.T, phi)
+    
+    # If the experiment is not informative:
+    if (la.matrix_rank(R) < M):
+        raise ValueError('Experiment is not informative')
+
     S = np.dot(phi.T, y)
     theta = la.solve(R, S)
 
@@ -116,16 +117,17 @@ def iv(na, nb, u, y, y2, nk=0):
         csi[:, k] = u[n_max - i:N - i]
         k = k + 1
 
-    # If two or more columns of phi are equal,
-    # then inverse operation will not be possible!
-    if (la.matrix_rank(phi) < M):
-        raise ValueError('Phi must have rank equal to na+nb+1!')
 
     # Crop y from n_max to N
     y = y[n_max:N]
 
     # Find theta
     R = np.dot(csi.T, phi)
+
+    # If the experiment is not informative:
+    if (la.matrix_rank(R) < M):
+        raise ValueError('Experiment is not informative')
+
     S = np.dot(csi.T, y)
     theta = la.solve(R, S)
 
