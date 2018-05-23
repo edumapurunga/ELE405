@@ -12,8 +12,8 @@ Model to be estimated:
 
     G(q^-1) = A/B, H(q^-1) = unknown
 
-    A(q^-1) = 1 -0.99q^(-1)
-    B(q^-1) = 5q^(-1)
+    A(q^-1) = 1 - 0.99q^(-1)
+    B(q^-1) = 0.01
 
 Authors:
     augustomengarda
@@ -26,38 +26,37 @@ Authors:
 
 """
 
+import numpy as np
+import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')
-from sysid import iv
-import numpy as np
+from sysid import ls
 from scipy import signal
-import matplotlib.pyplot as plt
 
 ## Number of samples in each experiment
 N=1000
 
 ## Fill the coefficients of the model for A and B
-a=np.array([1, -0.99])
-b=np.array([0, 5])
+a0=np.array([1, -0.99])
+b0=np.array([0.01])
 
 ## Input: Sine function
 t=np.arange(N)
-u=np.sin(t/10)
+u=np.sin(t/50)
 ## Output: Response of the model to a Sine function (u1)
-y=signal.lfilter(b,a,u)
+y0=signal.lfilter(b0,a0,u)
 
 ## Apply error to the output signal obtained using the reference model
-v=np.random.normal(0,7,N)
-yr1=y+v
-v=np.random.normal(0,7,N)
-yr2=y+v
+v=np.random.randn(N)*0.05
+y1=y0+v
+v=np.random.randn(N)*0.05
+y2=y0+v
 
 ## Estimate theta using Instrumental Variable method
-theta=iv(1,0,u,yr1,yr2,1)
+a,b=iv(1,0,u,y1,y2,0)
 
-## Fill arrays to store the estimated parameters
-a = np.append([1], theta[0][0])
-b = np.append([0], theta[1][0])
+## Simulation
+ys=signal.lfilter(b,np.array([1, a]),u)
 
 ## Title
 print("Example of using Instrumental Variable")
@@ -65,11 +64,13 @@ print("Example of using Instrumental Variable")
 # Plot input vs output
 print("Input and output data")
 plt.figure()
-plt.plot(t, u, t, yr1, t, yr2)
-plt.show()
+plt.plot(t, y1 , label='output with noise')
+plt.plot(t, y0, label='output without noise')
+plt.plot(t, ys, label='simulation')
+plt.legend()
 
 print("Coefficients of A ([a1, a2, ...]")
 print(a)
 
-print("Coefficients of B ([b0, b1, b2, ...]")
+print("Coefficients of B ([b_k, b_k+1, b_k+2, ...]")
 print(b)
