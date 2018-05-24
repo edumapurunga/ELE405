@@ -13,7 +13,7 @@
 
 import numpy as np
 import numpy.linalg as la
-
+from scipy import signal as sig #Necessary for SM
 
 def ls(na, nb, u, y, nk=0):
 
@@ -136,3 +136,66 @@ def iv(na, nb, u, y, y2, nk=0):
     b = theta[na:na + nb + 1]
 
     return [a, b]
+
+def steiglitz_mcbride(nf, nb, nk, tol, u, y):
+    """
+    This function implements the Steiglitz-Mcbride method for dynamic system 
+    identification of single input single output (SISO) output-error models.
+    Output error models are as following:
+
+        Output Error (OE) model: y(k) = q^(-nk)B(q^-1)/F(q^-1)*u(k) + e(k) 
+             
+    Inputs:
+        nf: Desired order of the polynomial F(q^-1) (scalar integer)
+        nb: Desired order of the polynomial B(q^-1) (scalar integer)
+        nk: Desired dead time (scalar integer)
+        tol: tolerance criteria for stopping the algorithm (scalar positive real number)
+        u: Input sequence (ndarray)
+        y: Output sequence (ndarray)
+    Outputs:
+        theta: Estimated coefficients of the polynomals F(q^-1) and B(q^-1) (ndarray)
+    """
+    #Default parameters of the algorithm
+    Kmax = 50   #Maximum number of iterations
+    L = max(nf, nb+nk)
+    #Input testing
+    N = len(u)
+    #Error handling
+    #Algorithm
+    cond = True
+    k = 1
+    Phif = np.zeros((N-L, nf+nb))
+    Phi = vec_delay(range(1,nf+1), range(nk, nb+nk), -y, u)
+    theta = la.solve(Phi.T.dot(Phi), Phi.T.dot(y[L::]))
+    while cond:
+        Ahat = np.insert(theta[0:nf], 0, 1)
+        for i in range(0, nf + nb):
+            Phif[:,i] = sig.lfilter([1], Ahat, Phi[:,i], 0)
+        yf = sig.lfilter([1], Ahat, y[L::], 0)
+        theta = la.solve(Phif.T.dot(Phif), Phif.T.dot(yf))
+        cond = la.norm(Ahat[1::]-theta[0:nf].reshape(1, nf)) > tol and k < Kmax
+        k += 1
+    # Split theta in vectors a and b
+    a = theta[0:nf]
+    b = theta[nf+1::]
+
+    return theta
+
+#Avoid a brunch of fors in the methods repeating the same code (this function should only be used as an internal method)
+def vec_delay(nu, ny, u, y):
+    #Setting the input arguments in a tratable form
+    N = len(u)
+    u = np.array(u).reshape((N, 1))
+    y = np.array(y).reshape((N, 1))
+    #Input and error handling
+    
+    #Algorithm
+    u_n = len(nu)
+    y_n = len(ny)
+    L = max([max(nu),max(ny)])
+    Phi = np.zeros((N-L, u_n + y_n))
+    for i in range(0, u_n):
+        Phi[0:N-L+1, i:i+1] = u[L-nu[i]:N-nu[i]] 
+    for i in range(0, y_n):    
+        Phi[0:N-L+1, u_n+i:u_n+i+1] = y[L-ny[i]:N-ny[i]]
+    return Phi
