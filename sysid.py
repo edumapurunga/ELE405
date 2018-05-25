@@ -256,3 +256,59 @@ def els(na, nb, nc, u, y, nk=0, n=10):
     a = a[1:]
     c = c[1:]
     return [a, b, c]
+
+#Auxiliary functions
+def vec_delay(nu, u, ny = [], y = [], nw = [], w = []):
+    """
+    This function returns a matrix of delayed versions of the vector u and y.
+
+    Inputs:
+        nu : an array containing the chosen delays for vector u (numpy array or list)
+        ny : an array containing the chosen delays for vector y (numpy array or list)
+        nw : an array containing the chosen delays for vector w (numpy array or list)
+        u  : the data vector (numpy array)
+        y  : the data vector (numpy array)
+        w  : the data vector (numpy array)
+    Outputs:
+        Phi: a matrix of the form: (numpy array)
+        Phi = 
+    """    
+    #Number of arguments sent by the user
+    N = len(u)
+    u_n = len(nu)
+    D = nu
+    u = np.array(u).reshape((N, 1))
+    Dd = u
+    narg = 1
+    y_n = 0
+    maxny = 0
+    w_n = 0
+    maxnw = 0
+    if len(y):
+        narg += 1
+        y = np.array(y).reshape((N, 1))
+        D = [D, ny]
+        Dd = [Dd, y]
+        maxny = max(ny)
+        y_n = len(ny)
+    if len(w):
+        narg += 1
+        w = np.array(w).reshape((N, 1))
+        D = [D, nw]
+        Dd = [Dd, w]
+        maxnw = max(nw)
+        w_n = len(ny)
+    #Input and error handling
+    
+    #Algorithm
+    L = max([max(nu), maxny, maxnw])
+    Phi = np.zeros((N-L, u_n+y_n+w_n))
+    cd = 0
+    ci = 0
+    for d in D:
+        for i in range(0, len(d)):
+            Phi[0:N-L+1, ci:ci+1] = Dd[cd][L-d[i]:N-d[i]]
+            ci +=1
+        cd += 1
+    return Phi
+
