@@ -16,7 +16,7 @@ import numpy.linalg as la
 from scipy import signal
 
 
-def ls(na, nb, u, y, nk=0):
+def ls(na, nb, nk, u, y):
     '''
 
     :param na: number of zeros from A;
@@ -49,20 +49,7 @@ def ls(na, nb, u, y, nk=0):
                          'than the maximum order!')
 
     # Build matrix phi in which will contain y and u shifted in time
-    phi = np.zeros((N - n_max, M))
-
-    k = 0
-
-    # Fill phi with y shifted in time from 0 to nb
-    for i in range(1, na + 1):
-        phi[:, k] = -y[n_max - i:N - i]
-        k = k + 1
-
-    # Fill phi with u shifted in time from 0 to nb
-    for i in range(nk, nb + nk + 1):
-        phi[:, k] = u[n_max - i:N - i]
-        k = k + 1
-
+    phi = vec_delay(range(1, na+1), -y, range(nk, nk+nb+1), u)
 
     # Crop y from n_max to N
     y = y[n_max:N]
