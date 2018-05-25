@@ -68,9 +68,9 @@ for i in range(0,MC):
     #New Noise Realization
     y = ydet + stde*np.random.randn(N, 1)
     #New estimative using the Steiglitz-McBride method 
-    asm, bsm = steiglitz_mcbride(nf, nb, nk, tol, u, y)
+    fsm, bsm = steiglitz_mcbride(nf, nb, nk, tol, u, y)
     #Storage the new estimative
-    thetaSM[0:nf, i:i+1] = asm
+    thetaSM[0:nf, i:i+1] = fsm
     thetaSM[nf::, i:i+1] = bsm
 
 ## Results
