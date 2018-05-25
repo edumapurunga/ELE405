@@ -1,6 +1,6 @@
 """
 
-Example of using Least Square (module_name.ls).
+Example of using Least Square (sysid.ls).
 
 In this example, a reference model G will be used for generating 
 output data in function of a cosine function. In order to add error to the 
@@ -53,7 +53,7 @@ y=y0+v
 
 ## Estimate theta using Least Square method
 print("Example of using Least Square")
-a,b=ls(1,0,u,y,0)
+a,b=ls(1,0,0,u,y)
 
 ## Simulation
 ys=signal.lfilter(b,np.array([1, a]),u)
