@@ -11,7 +11,7 @@ Model to be estimated:
 
     y(t) = G(q^-1)u(t) + H(q^-1)e(t)
 
-    G(q^-1) = A/B, H(q^-1) = 1/A
+    G(q^-1) = B/A, H(q^-1) = 1/A
 
     A(q^-1) = 1 - 0.99q^(-1)
     B(q^-1) = 0.01

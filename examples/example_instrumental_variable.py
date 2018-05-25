@@ -30,7 +30,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 sys.path.append('..')
-from sysid import ls
+from sysid import iv
 from scipy import signal
 
 ## Number of samples in each experiment
