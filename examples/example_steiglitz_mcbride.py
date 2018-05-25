@@ -11,7 +11,7 @@ Model to be estimated:
 
     F(q^-1) = 1 - 1.2q^(-1) + 0.36q^(-1)
     B(q^-1) = 0.5 - 0.4^(-1)
-	
+
 Authors:
     augustomengarda
     cafeemymelo
@@ -33,8 +33,8 @@ from sysid import steiglitz_mcbride
 
 #System Simulation#
 #True System
-Fo = [1, -1.2, 0.36]
-Bo = [0.5, -0.4]
+Fo = [1, -1.2, 0.36] #Fo(q^-1) = 1 -1.2q^-1 + 0.36q^-2
+Bo = [0.5, -0.4]     #Bo(q^-1) = 0.5 -0.4q^-1
 thetao = np.array([Fo[1::], Bo])
 #Number of Samples
 N = 400; 
@@ -44,7 +44,7 @@ u = -1 + 2*np.random.rand(N, 1)
 ydet = np.zeros((N, 1))
 y = np.zeros((N, 1))
 #System orders
-nf = 2; nb = 2; nk = 0;
+nf = 2; nb = 1; nk = 0;
 #Signal-to-noise ratio
 SNR = 20;
 
@@ -58,7 +58,7 @@ stde = np.std(ydet)*10**(-SNR/20);
 #Monte Carlo runs
 MC = 100;
 #Data storage
-thetaSM = np.zeros((nf+nb, MC))
+thetaSM = np.zeros((nf+nb+1, MC))
 #Steigliz-McBride tolerance variables
 tol = 1E-5
 maxK = 50
@@ -67,15 +67,16 @@ maxK = 50
 for i in range(0,MC):
     #New Noise Realization
     y = ydet + stde*np.random.randn(N, 1)
-	#New estimative using the Steiglitz-McBride method 
-    thetasm = steiglitz_mcbride(nf, nb, nk, tol, u, y)
-	#Storage the new estimative
-    thetaSM[:, i:i+1] = thetasm
+    #New estimative using the Steiglitz-McBride method 
+    asm, bsm = steiglitz_mcbride(nf, nb, nk, tol, u, y)
+    #Storage the new estimative
+    thetaSM[0:nf, i:i+1] = asm
+    thetaSM[nf::, i:i+1] = bsm
 
 ## Results
 
 #bias
-biasSM = la.norm(thetao.reshape(1, nf+nb)-np.mean(thetaSM, 1))
+biasSM = la.norm(thetao.reshape(1, nf+nb+1)-np.mean(thetaSM, 1))
 #covarince
 covSM = np.cov(thetaSM)
 varSM = la.norm(np.diag(covSM))

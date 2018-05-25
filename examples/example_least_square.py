@@ -53,7 +53,7 @@ y=y0+v
 
 ## Estimate theta using Least Square method
 print("Example of using Least Square")
-a,b=ls(1,0,u,y,0)
+a,b=ls(1,0,0,u,y)
 
 ## Simulation
 ys=signal.lfilter(b,np.array([1, a]),u)
