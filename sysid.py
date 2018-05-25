@@ -15,10 +15,10 @@ import numpy as np
 import numpy.linalg as la
 from scipy import signal as sig #Necessary for SM
 
-def ls(na, nb, nk, u, y):
+def ls(na, nb, u, y, nk=0):
 
     # Number of samples
-    N = np.size(y) 
+    N = np.size(y)
 
     # Vetor u and y must have same amount of samples
     if N != np.size(u):
@@ -39,7 +39,20 @@ def ls(na, nb, nk, u, y):
                          'than the maximum order!')
 
     # Build matrix phi in which will contain y and u shifted in time
-    phi = vec_delay(range(1, na+1), -y, range(nk, nk+nb+1), u)
+    phi = np.zeros((N - n_max, M))
+
+    k = 0
+
+    # Fill phi with y shifted in time from 0 to nb
+    for i in range(1, na + 1):
+        phi[:, k] = -y[n_max - i:N - i]
+        k = k + 1
+
+    # Fill phi with u shifted in time from 0 to nb
+    for i in range(nk, nb + nk + 1):
+        phi[:, k] = u[n_max - i:N - i]
+        k = k + 1
+
 
     # Crop y from n_max to N
     y = y[n_max:N]
@@ -64,7 +77,7 @@ def ls(na, nb, nk, u, y):
 def iv(na, nb, u, y, y2, nk=0):
 
     # Number of samples
-    N = np.size(y) #Same of LS here @edumapurunga
+    N = np.size(y)
 
     # Vetors u, y and y2 must have same amount of samples
     if (N != np.size(u)) or (N != np.size(y2)):
@@ -144,134 +157,45 @@ def steiglitz_mcbride(nf, nb, nk, tol, u, y):
     """
     #Default parameters of the algorithm
     Kmax = 50   #Maximum number of iterations
+    L = max(nf, nb+nk)
     #Input testing
+    N = len(u)
     #Error handling
     #Algorithm
     cond = True
     k = 1
-    #First Estimate using the Least Squares method
-    Aold, Bold = ls(nf, nb, nk, u, y)
+    Phif = np.zeros((N-L, nf+nb))
+    Phi = vec_delay(range(1,nf+1), range(nk, nb+nk), -y, u)
+    theta = la.solve(Phi.T.dot(Phi), Phi.T.dot(y[L::]))
     while cond:
-        #Filter for whitening the noise term
-        Ahat = np.insert(Aold, 0, 1)
-        #Filtered input
-        uf = sig.lfilter([1], Ahat, u, 0)
-        #Filtered output
-        yf = sig.lfilter([1], Ahat, y, 0)
-        #Solve a LS problem with the new filtered data
-        Anew, Bnew = ls(nf, nb, nk, uf, yf)
-        #Stopping Criteria: 1) Little variation between the norm of the old and new vector. 2) Maximum iterations reached
-        cond = la.norm(Ahat[1::]-Anew.reshape(1, nf)) > tol and k < Kmax
-        #Update
-        Aold = Anew
+        Ahat = np.insert(theta[0:nf], 0, 1)
+        for i in range(0, nf + nb):
+            Phif[:,i] = sig.lfilter([1], Ahat, Phi[:,i], 0)
+        yf = sig.lfilter([1], Ahat, y[L::], 0)
+        theta = la.solve(Phif.T.dot(Phif), Phif.T.dot(yf))
+        cond = la.norm(Ahat[1::]-theta[0:nf].reshape(1, nf)) > tol and k < Kmax
         k += 1
-    return [Anew, Bnew]
+    # Split theta in vectors a and b
+    a = theta[0:nf]
+    b = theta[nf+1::]
 
-def kalman(A, B, C, D, G, Q, R, u, y, xo, Po):
-    """
-    This function implements the Kalman filter that estimates the states of a 
-    system defined as:
-        
-        x[k+1] = A[k]x[k] + B[k]u[k] + G[k]w[k] (State Equation)
-        y[k]   = C[k]x[k] + D[k]u[k]       v[k] (Measurement Equation)
-        
-    with known inputs u, outputs y and the covariances matrixs Q[k] = E[w[k]w[j]']
-    and R[k] = E[v[k]v[j]'].
-    Inputs:
-        A - the
-    """
-    #Input testing
-    Nu, r = u.shape
-    Ny, p = y.shape
-    n = xo.shape
-    n = n[0]
-    N = Nu
-    #Error handling
-    #Data Storage
-    xkk = np.zeros((n, N)) #Measurement update
-    xkk1= np.zeros((n, N)) #Time update
-    Kk  = np.zeros((n, N)) #Kalman gain
-    Ekk = np.zeros((N, 1)) #Sum of the squared estimation error for x[k|k]
-    Vkk = np.zeros((n, N)) #Variance of each state for x[k|k]
-    Ekk1= np.zeros((N, 1)) #Sum of the squared estimation error for x[k|k-1]
-    Vkk1= np.zeros((n, N)) #Variance of each state for x[k|k-1]
-    #Discete case
-    #Initial conditions
-    P = Po
-    x = xo
-    for i in range(0, N):
-        #Save the delayed prediction of Kalman Filter
-        xkk1[:,i:i+1] = x
-        Ekk1[i] = np.trace(P)
-        Vkk1[:,i] = np.diag(P)
-        #Measurement update
-        M = np.dot(P.dot(C.T), la.pinv(C.dot(P.dot(C.T)) + R))
-        x = x + M.dot(y[i]-(C.dot(x)+D.dot(u[i]))) #x[k|k]
-        P = np.dot(np.eye(n)-M.dot(C), P)          #P[k|k]
-        #Save the Data
-        xkk[:,i:i+1] = x
-        Ekk[i] = np.trace(P)
-        Vkk[:,i] = np.diag(P)
-        #Time update
-        x = A.dot(x) + B.dot(u[i:i+1]) #x[k+1|k]
-        P = np.dot(A.dot(P), A.T) + np.dot(G.dot(Q), G.T)
-        #Kalman Filter
-        Kk[:,i:i+1] = A.dot(M)
-        
-    return (Kk, xkk, Vkk, xkk1, Vkk1)
+    return theta
 
-#################################################################################################
-#Auxiliary functions
-def vec_delay(nu, u, ny = [], y = [], nw = [], w = []):
-    """
-    This function returns a matrix of delayed versions of the vector u and y.
-
-    Inputs:
-        nu : an array containing the chosen delays for vector u (numpy array or list)
-        ny : an array containing the chosen delays for vector y (numpy array or list)
-        nw : an array containing the chosen delays for vector w (numpy array or list)
-        u  : the data vector (numpy array)
-        y  : the data vector (numpy array)
-        w  : the data vector (numpy array)
-    Outputs:
-        Phi: a matrix of the form: (numpy array)
-        Phi = 
-    """    
-    #Number of arguments sent by the user
+#Avoid a brunch of fors in the methods repeating the same code (this function should only be used as an internal method)
+def vec_delay(nu, ny, u, y):
+    #Setting the input arguments in a tratable form
     N = len(u)
-    u_n = len(nu)
-    D = nu
     u = np.array(u).reshape((N, 1))
-    Dd = u
-    narg = 1
-    y_n = 0
-    maxny = 0
-    w_n = 0
-    maxnw = 0
-    if len(y):
-        narg += 1
-        y = np.array(y).reshape((N, 1))
-        D = [D, ny]
-        Dd = [Dd, y]
-        maxny = max(ny)
-        y_n = len(ny)
-    if len(w):
-        narg += 1
-        w = np.array(w).reshape((N, 1))
-        D = [D, nw]
-        Dd = [Dd, w]
-        maxnw = max(nw)
-        w_n = len(ny)
+    y = np.array(y).reshape((N, 1))
     #Input and error handling
     
     #Algorithm
-    L = max([max(nu), maxny, maxnw])
-    Phi = np.zeros((N-L, u_n+y_n+w_n))
-    cd = 0
-    ci = 0
-    for d in D:
-        for i in range(0, len(d)):
-            Phi[0:N-L+1, ci:ci+1] = Dd[cd][L-d[i]:N-d[i]]
-            ci +=1
-        cd += 1
+    u_n = len(nu)
+    y_n = len(ny)
+    L = max([max(nu),max(ny)])
+    Phi = np.zeros((N-L, u_n + y_n))
+    for i in range(0, u_n):
+        Phi[0:N-L+1, i:i+1] = u[L-nu[i]:N-nu[i]] 
+    for i in range(0, y_n):    
+        Phi[0:N-L+1, u_n+i:u_n+i+1] = y[L-ny[i]:N-ny[i]]
     return Phi
